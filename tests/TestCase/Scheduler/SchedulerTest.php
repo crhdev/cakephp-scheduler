@@ -9,6 +9,7 @@ use Cake\Console\Command\HelpCommand;
 use Cake\Console\ConsoleIo;
 use Cake\Core\Container;
 use Cake\TestSuite\TestCase;
+use CakeScheduler\Error\SchedulerWithoutOverlappingException;
 use CakeScheduler\Scheduler\Scheduler;
 use InvalidArgumentException;
 
@@ -62,5 +63,11 @@ class SchedulerTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->scheduler->execute('UnknownCommand');
+    }
+
+    public function testAddWhitoutOverlapping(): void
+    {
+        $this->expectException(SchedulerWithoutOverlappingException::class);
+        $this->scheduler->execute(fn() => 1)->withoutOverlapping();
     }
 }

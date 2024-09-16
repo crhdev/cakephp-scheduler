@@ -3,9 +3,11 @@ declare(strict_types=1);
 
 namespace CakeScheduler\Scheduler;
 
+use Cake\Cache\Cache;
 use Cake\Chronos\Chronos;
 use Cake\Console\CommandInterface;
 use Cake\Console\ConsoleIo;
+use CakeScheduler\Error\SchedulerWithoutOverlappingException;
 use CakeScheduler\Scheduler\Traits\FrequenciesTrait;
 use Cron\CronExpression;
 
@@ -24,11 +26,38 @@ class Event
     public const SATURDAY = 6;
 
     /**
+     * The uniqid for this event.
+     *
+     * @var null|string
+     */
+    private ?string $uniqId = null;
+
+    /**
+     * Indicates if the command should not overlap itself.
+     *
+     * @var bool
+     */
+    public $withoutOverlapping = false;
+
+    /**
+     * The number of minutes the cache should be valid.
+     *
+     * @var int
+     */
+    public $expiresAt = 1440;
+
+    /**
+     * @var \Psr\SimpleCache\CacheInterface&\Cake\Cache\CacheEngineInterface
+     */
+    private $pool;
+
+    /**
      * @param \Cake\Console\CommandInterface $command The command object related to this event
      * @param array $args Args which should be passed to the command
      */
     public function __construct(protected CommandInterface $command, protected array $args = [])
     {
+        $this->pool = Cache::pool('default');
     }
 
     /**
@@ -47,9 +76,18 @@ class Event
      */
     public function run(ConsoleIo $io): ?int
     {
+        if ($this->shouldSkipDueToOverlapping()) {
+            $io->error(sprintf('Another instance of [%s] is running', get_class($this->command)));
+            return 0;
+        }
+
         $io->info(sprintf('Executing [%s]', get_class($this->command)));
 
-        return $this->command->run($this->args, $io);
+        $result = $this->command->run($this->args, $io);
+
+        $this->removeMutex();
+
+        return $result;
     }
 
     /**
@@ -74,5 +112,63 @@ class Event
     public function getArgs(): array
     {
         return $this->args;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getUniqId(): ?string
+    {
+        return $this->uniqId;
+    }
+
+    /**
+     * Determine if the event should skip because another process is overlapping.
+     *
+     * @return bool
+     */
+    public function shouldSkipDueToOverlapping(): bool
+    {
+        return $this->withoutOverlapping && ! $this->pool->set($this->uniqId, ['lock' => true], $this->expiresAt);
+    }
+
+    /**
+     * @param string $uniqId
+     * @return $this
+     */
+    public function withUniqId(string $uniqId): self
+    {
+        $this->uniqId = $uniqId;
+        return $this;
+    }
+
+    /**
+     * @param int $minutes Specify how many minutes must pass before the "without overlapping" lock expires.
+     * By default, the lock will expire after 24 hours:
+     * @return void
+     */
+    public function withoutOverlapping(int $expiresAt = 1440)
+    {
+        if($this->uniqId === null) {
+            throw new SchedulerWithoutOverlappingException(
+                "A scheduled event name is required to prevent overlapping. Use the 'withUniqId' method before 'withoutOverlapping'."
+            );
+        }
+
+        $this->withoutOverlapping = true;
+
+        $this->expiresAt = $expiresAt;
+    }
+
+    /**
+     * Delete the mutex for the event.
+     *
+     * @return void
+     */
+    protected function removeMutex(): void
+    {
+        if ($this->withoutOverlapping) {
+            $this->pool->delete($this->uniqId);
+        }
     }
 }
