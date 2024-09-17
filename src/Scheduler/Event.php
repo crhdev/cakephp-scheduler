@@ -47,18 +47,14 @@ class Event
     public $expiresAt = 1440;
 
     /**
-     * @var \Psr\SimpleCache\CacheInterface&\Cake\Cache\CacheEngineInterface
-     */
-    private $pool;
-
-    /**
      * @param \Cake\Console\CommandInterface $command The command object related to this event
      * @param array $args Args which should be passed to the command
      */
-    public function __construct(protected CommandInterface $command, protected array $args = [])
-    {
-        $this->pool = Cache::pool('default');
-    }
+    public function __construct(
+        protected CommandInterface $command,
+        protected array $args = [],
+        protected ?Scheduler $scheduler = null
+    ) {}
 
     /**
      * @return bool
@@ -129,7 +125,11 @@ class Event
      */
     public function shouldSkipDueToOverlapping(): bool
     {
-        return $this->withoutOverlapping && ! $this->pool->set($this->uniqId, ['lock' => true], $this->expiresAt);
+        if($this->withoutOverlapping) {
+            return !$this->scheduler->getMutex()->add($this->uniqId, 1, $this->expiresAt);
+        }
+
+        return false;
     }
 
     /**
@@ -143,15 +143,15 @@ class Event
     }
 
     /**
-     * @param int $minutes Specify how many minutes must pass before the "without overlapping" lock expires.
+     * @param int $expiresAt Specify how many seconds must pass before the "without overlapping" lock expires.
      * By default, the lock will expire after 24 hours:
      * @return void
      */
-    public function withoutOverlapping(int $expiresAt = 1440)
+    public function withoutOverlapping(int $expiresAt = 86400)
     {
         if($this->uniqId === null) {
             throw new SchedulerWithoutOverlappingException(
-                "A scheduled event name is required to prevent overlapping. Use the 'withUniqId' method before 'withoutOverlapping'."
+                "A scheduled event id is required to prevent overlapping. Use the 'withUniqId' method before 'withoutOverlapping'."
             );
         }
 
@@ -168,7 +168,7 @@ class Event
     protected function removeMutex(): void
     {
         if ($this->withoutOverlapping) {
-            $this->pool->delete($this->uniqId);
+           $this->scheduler->getMutex()->delete($this->uniqId);
         }
     }
 }

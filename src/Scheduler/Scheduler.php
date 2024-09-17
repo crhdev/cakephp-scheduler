@@ -36,6 +36,8 @@ class Scheduler implements EventDispatcherInterface
      */
     protected CollectionInterface $events;
 
+    protected Mutex $mutex;
+
     /**
      * The event code if execution should be stopped
      */
@@ -77,13 +79,30 @@ class Scheduler implements EventDispatcherInterface
     }
 
     /**
+     * @param Mutex $mutex
+     * @return void
+     */
+    public function setMutex(Mutex $mutex)
+    {
+        $this->mutex = $mutex;
+    }
+
+    /**
+     * @return Mutex
+     */
+    public function getMutex(): Mutex
+    {
+        return $this->mutex;
+    }
+
+    /**
      * @param \Cake\Console\CommandInterface $command The command instance which should be executed
      * @param array $args Args which should be passed on to the command
      * @return \CakeScheduler\Scheduler\Event
      */
     protected function addCommand(CommandInterface $command, array $args = []): Event
     {
-        $event = new Event($command, $args);
+        $event = new Event($command, $args, $this);
         $this->events = $this->events->appendItem($event);
 
         return $event;
@@ -119,7 +138,7 @@ class Scheduler implements EventDispatcherInterface
                 return call_user_func_array($this->callable, $this->args);
             }
         };
-        $event = new Event($command, $args);
+        $event = new Event($command, $args, $this);
         $this->events = $this->events->appendItem($event);
 
         return $event;
