@@ -1,3 +1,33 @@
+# This is a fork from https://github.com/LordSimal/cakephp-scheduler
+## This fork contains some useful features taken form laravel's scheduler
+
+- Preventing Task Overlaps.
+Behind the scenes, the withoutOverlapping method utilizes redis cache to obtain locks. Useful for multiserver apps.
+  ```php
+        $scheduler->setMutex(new RedisMutex([
+            'host' => 'redis',
+        ]));
+  
+          $scheduler
+            ->execute(SlowerCommand::class)
+            ->everyXMinutes(1)
+            ->withUniqId('my-slower-command')
+            ->withoutOverlapping();
+  ```
+
+  - Save stastistics to database
+   ```bash
+  ./bin/cake migrations migrate -p CakeScheduler
+  ```
+  
+  ```php
+          $scheduler
+            ->execute(SlowerCommand::class)
+            ->everyXMinutes(1)
+            ->withUniqId('my-slower-command')
+            ->enableStatistics();
+  ```    
+
 # CakePHP Scheduler Plugin
 
 [![Latest Stable Version](https://poser.pugx.org/lordsimal/cakephp-scheduler/v)](https://packagist.org/packages/lordsimal/cakephp-scheduler) [![Total Downloads](https://poser.pugx.org/lordsimal/cakephp-scheduler/downloads)](https://packagist.org/packages/lordsimal/cakephp-scheduler) [![Latest Unstable Version](https://poser.pugx.org/lordsimal/cakephp-scheduler/v/unstable)](https://packagist.org/packages/lordsimal/cakephp-scheduler) [![License](https://poser.pugx.org/lordsimal/cakephp-scheduler/license)](https://packagist.org/packages/lordsimal/cakephp-scheduler) [![PHP Version Require](https://poser.pugx.org/lordsimal/cakephp-scheduler/require/php)](https://packagist.org/packages/lordsimal/cakephp-scheduler)
