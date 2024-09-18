@@ -55,7 +55,6 @@ class ScheduleRunCommand extends Command
      */
     protected function runEvent(Event $event, ConsoleIo $io): ?int
     {
-        $this->scheduler->dispatchEvent('CakeScheduler.beforeExecute', ['event' => $event]);
         try {
             $result = $event->run($io);
             $this->scheduler->dispatchEvent('CakeScheduler.afterExecute', ['event' => $event, 'result' => $result]);

@@ -3,13 +3,22 @@ declare(strict_types=1);
 
 namespace CakeScheduler\Scheduler;
 
+use JetBrains\PhpStorm\ArrayShape;
+
 class RedisMutex implements  Mutex {
     private \Redis $redis;
 
-    public function __construct()
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function __construct(#[ArrayShape([
+        'host' => 'string',
+        'port' => 'int',
+    ])] $config = [])
     {
+        $defaultConfig = $config + ['host' => '127.0.0.1', 'port' => 6379];
         $this->redis = new \Redis([
-            'host' => 'redis',
+            'host' => $defaultConfig['host'],
             'port' => 6379,
         ]);
     }
@@ -21,12 +30,12 @@ class RedisMutex implements  Mutex {
      * @return bool|\Redis
      * @throws \RedisException
      */
-    public function add($key, $value, $expiresAt = 1440)
+    public function add(string $key, $value, int $expiresAt = 1440)
     {
         return $this->redis->set($key, $value, ['nx', 'ex' => $expiresAt]);
     }
 
-    public function delete($key)
+    public function delete(string $key)
     {
         return $this->redis->del($key);
     }
