@@ -2,6 +2,13 @@
 ## This fork contains some useful features taken from Laravel's scheduler. 
 For installation/configuration please referer to original [README](https://github.com/LordSimal/cakephp-scheduler/blob/1.x/README.md)
 
+### Scheduling a callable.
+  ```php
+  $scheduler->execute(function($a, $b, $c, ConsoleIo $io) {
+      return $a + $b + $c;
+  }, [1,2,3])->everyXMinutes(1);
+  ```
+
 ### Preventing Task Overlaps.
 Behind the scenes, the withoutOverlapping method utilizes redis cache to obtain locks. 
 You can create your own mutex implementing \CakeScheduler\Scheduler\Mutex interface.
