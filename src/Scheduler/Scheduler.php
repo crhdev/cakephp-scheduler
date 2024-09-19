@@ -36,7 +36,7 @@ class Scheduler implements EventDispatcherInterface
      */
     protected CollectionInterface $events;
 
-    protected Mutex $mutex;
+    protected ?Mutex $mutex;
 
     /**
      * The event code if execution should be stopped
@@ -88,9 +88,9 @@ class Scheduler implements EventDispatcherInterface
     }
 
     /**
-     * @return Mutex
+     * @return Mutex|null
      */
-    public function getMutex(): Mutex
+    public function getMutex(): ?Mutex
     {
         return $this->mutex;
     }

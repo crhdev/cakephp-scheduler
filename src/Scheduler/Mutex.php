@@ -5,5 +5,6 @@ namespace CakeScheduler\Scheduler;
 
 interface Mutex {
     public function add(string $key, $value, int $expiresAt);
+    public function clean();
     public function delete(string $key);
 }

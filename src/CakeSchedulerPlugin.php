@@ -37,6 +37,8 @@ class CakeSchedulerPlugin extends BasePlugin
      */
     public function services(ContainerInterface $container): void
     {
+        $container->add(ScheduleCacheClearCommand::class)
+            ->addArgument(Scheduler::class);
         $container->add(ScheduleRunCommand::class)
             ->addArgument(Scheduler::class);
         $container->add(ScheduleViewCommand::class)

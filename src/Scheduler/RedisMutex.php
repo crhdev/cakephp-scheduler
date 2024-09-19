@@ -56,6 +56,19 @@ class RedisMutex implements  Mutex {
     }
 
     /**
+     * @return void
+     * @throws \RedisException
+     */
+    public function clean()
+    {
+        $pattern = $this->config['prefix'] . '*';
+        $keys = $this->redis->keys($pattern);
+        foreach ($keys as $key) {
+            $this->redis->del($key);
+        }
+    }
+
+    /**
      * @param string $key
      * @return string
      */
