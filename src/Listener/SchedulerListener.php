@@ -35,7 +35,25 @@ class SchedulerListener implements EventListenerInterface
      */
     public function errorExecute(Event $event, SchedulerEvent $schedulerEvent, \Exception $error)
     {
-        debug($error->getMessage());
+        if(!$schedulerEvent->isStatisticsEnabled()) {
+            return;
+        }
+
+        $command = $schedulerEvent->getCommand()::class;
+        $frequency = $schedulerEvent->getExpression();
+        $cron = new CronExpression($frequency);
+
+        $this->conn->updateQuery(
+            'schedulers',
+            [
+                'return_value' => $result,
+                'completed_at' => $schedulerEvent->getFinishedAt(),
+                'next_run' => $cron->getNextRunDate()->format('Y-m-d H:i:s'),
+                'failure_message' => $error->getMessage(),
+            ],
+            [
+                'uniqid' => $schedulerEvent->getUniqId()
+            ])->execute();
     }
 
     /**
