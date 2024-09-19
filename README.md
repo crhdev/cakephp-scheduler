@@ -9,13 +9,20 @@ Useful for multiserver apps too.
   ```php
 $scheduler->setMutex(new RedisMutex([
     'host' => 'redis',
+    'prefix' => 'schr-' // default to 'scheduler-'
 ]));
 
   $scheduler
     ->execute(SlowerCommand::class)
     ->everyXMinutes(1)
     ->withUniqId('my-slower-command')
-    ->withoutOverlapping();
+    ->withoutOverlapping(); // default to 24hrs
+
+  $scheduler
+    ->execute(SlowerCommand::class)
+    ->everyXMinutes(1)
+    ->withUniqId('my-slower-command')
+    ->withoutOverlapping(10); // set to 10 secs
   ```
 
   ### Save stastistics to database.
