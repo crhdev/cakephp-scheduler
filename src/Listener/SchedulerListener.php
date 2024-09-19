@@ -46,7 +46,7 @@ class SchedulerListener implements EventListenerInterface
         $this->conn->updateQuery(
             'schedulers',
             [
-                'return_value' => $result,
+                'return_value' => -1,
                 'completed_at' => $schedulerEvent->getFinishedAt(),
                 'next_run' => $cron->getNextRunDate()->format('Y-m-d H:i:s'),
                 'failure_message' => $error->getMessage(),
