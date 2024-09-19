@@ -4,7 +4,7 @@ For installation/configuration please referer to original [README](https://githu
 
 ### Preventing Task Overlaps.
 Behind the scenes, the withoutOverlapping method utilizes redis cache to obtain locks. 
-You can create your own mutex implementing the interface \CakeScheduler\Scheduler\Mutex.
+You can create your own mutex implementing \CakeScheduler\Scheduler\Mutex interface.
 Useful for multiserver apps too.
   ```php
 $scheduler->setMutex(new RedisMutex([
