@@ -32,6 +32,11 @@ $scheduler->setMutex(new RedisMutex([
     ->withoutOverlapping(10); // set to 10 secs
   ```
 
+If necessary, you can clear these cache locks using the schedule:clear_cache command. This is typically only necessary if a task becomes stuck due to an unexpected server problem.
+   ```bash
+  ./bin/cake schedule:cache_clear
+  ```
+
   ### Save stastistics to database.
    ```bash
   ./bin/cake migrations migrate -p CakeScheduler
