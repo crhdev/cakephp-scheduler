@@ -1,6 +1,23 @@
 # CakePHP Scheduler Plugin
 ## This fork contains some useful features taken from Laravel's scheduler. 
-For installation/configuration please referer to original [README](https://github.com/LordSimal/cakephp-scheduler/blob/1.x/README.md)
+For configuration please referer to original [README](https://github.com/LordSimal/cakephp-scheduler/blob/1.x/README.md)
+
+## Using this fork
+Add following to composer.json
+```json
+{
+    "require": {
+      "lordsimal/cakephp-scheduler": "dev-2.x",
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/crhdev/cakephp-scheduler.git",
+            "no-api": true
+        }
+    ]
+}
+```
 
 ### Scheduling a callable.
   ```php
