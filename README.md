@@ -1,5 +1,9 @@
 # CakePHP Scheduler Plugin
-## This fork contains some useful features taken from Laravel's scheduler. 
+
+## This fork contains some useful features taken from Laravel's scheduler.
+
+This fork always will be updated with code base from original project.
+
 For configuration please referer to original [README](https://github.com/LordSimal/cakephp-scheduler/blob/1.x/README.md)
 
 ## Using this fork
@@ -72,7 +76,8 @@ Head your browser to: http://127.0.0.1/cake-scheduler/scheduler
 
   
 ## Credit where credit is due
-This plugin is heavily inspired by the [Laravel Task Scheduling Feature](https://laravel.com/docs/10.x/scheduling)
+- [ORIGINAL PROJECT](https://github.com/LordSimal/cakephp-scheduler/blob/1.x/README.md)
+- This plugin is heavily inspired by the [Laravel Task Scheduling Feature](https://laravel.com/docs/10.x/scheduling)
 
 ## License
 The plugin is available as open source under the terms of the [MIT License](https://github.com/lordsimal/cakephp-scheduler/blob/main/LICENSE).
