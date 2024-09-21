@@ -61,6 +61,22 @@ class Event
      */
     private $finishedAt = null;
 
+    public ?string $description = null;
+
+    /**
+     * The array of callbacks to be run before the event is started.
+     *
+     * @var array
+     */
+    protected array $beforeCallbacks = [];
+
+    /**
+     * The array of callbacks to be run after the event is finished.
+     *
+     * @var array
+     */
+    protected array $afterCallbacks = [];
+
     /**
      * @param \Cake\Console\CommandInterface $command The command object related to this event
      * @param array $args Args which should be passed to the command
@@ -98,11 +114,19 @@ class Event
 
         $io->info(sprintf('Executing [%s]', get_class($this->command)));
 
+        foreach($this->beforeCallbacks as $beforeCallback) {
+            $beforeCallback($io);
+        }
+
         $result = $this->command->run($this->args, $io);
 
         $this->finishedAt = date('Y-m-d H:i:s');
 
         $this->removeMutex();
+
+        foreach($this->afterCallbacks as $afterCallback) {
+            $afterCallback($io);
+        }
 
         return $result;
     }
@@ -213,6 +237,61 @@ class Event
         $this->withoutOverlapping = true;
 
         $this->expiresAt = $expiresAt;
+    }
+
+    /**
+     * @param $description
+     * @return $this
+     */
+    public function description($description): self
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    /**
+     * @param callable $callback
+     * @return $this
+     */
+    public function addBeforeCallback(callable $callback): self
+    {
+        array_push($this->beforeCallbacks, $callback);
+        return $this;
+    }
+
+    /**
+     * @param callable $callback
+     * @return $this
+     */
+    public function addAfterCallback(callable $callback): self
+    {
+        array_push($this->afterCallbacks, $callback);
+        return $this;
+    }
+
+    /**
+     * Register a callback to ping a given URL before the job runs.
+     *
+     * @param  string  $url
+     * @return $this
+     */
+    public function pingBefore(string $url)
+    {
+        return $this->addBeforeCallback($this->pingCallback($url));
+    }
+
+    /**
+     * Get the callback that pings the given URL.
+     *
+     * @param  string  $url
+     * @return \Closure
+     */
+    protected function pingCallback($url)
+    {
+        return function () use ($url) {
+            $http = new \Cake\Http\Client();
+            return $http->get($url);
+        };
     }
 
     /**
