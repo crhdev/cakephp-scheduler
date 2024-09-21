@@ -23,6 +23,28 @@ Add following to composer.json
 }
 ```
 
+### Task Hooks.
+Using the addBeforeCallback and addAfterCallback methods, you may specify code to be executed before and after the scheduled task is executed:
+
+  ```php
+$scheduler
+    ->execute(CleanUpCommand::class)
+    ->addAfterCallback(function($io) {
+        $io->info('Some info');
+    })
+    ->everyXMinutes(1);
+  ```
+
+### Pinging URLs
+Using the pingBefore and pingAfter methods, the scheduler can automatically ping a given URL before or after a task is executed.
+
+  ```php
+$scheduler
+    ->execute(CleanUpCommand::class)
+    ->pingBefore('http://127.0.0.1:9000')
+    ->everyXMinutes(1);
+  ```
+
 ### Scheduling a callable.
   ```php
   $scheduler->execute(function($a, $b, $c, ConsoleIo $io) {
