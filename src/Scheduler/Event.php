@@ -281,6 +281,17 @@ class Event
     }
 
     /**
+     * Register a callback to ping a given URL after the job ends.
+     *
+     * @param  string  $url
+     * @return $this
+     */
+    public function pingAfter(string $url)
+    {
+        return $this->addAfterCallback($this->pingCallback($url));
+    }
+
+    /**
      * Get the callback that pings the given URL.
      *
      * @param  string  $url
