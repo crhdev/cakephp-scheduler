@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace CakeScheduler\Listener;
 
+use Cake\Command\Command;
 use Cake\Datasource\ConnectionManager;
 use Cake\Event\Event;
 use Cake\Event\EventListenerInterface;
@@ -39,7 +40,7 @@ class SchedulerListener implements EventListenerInterface
             return;
         }
 
-        $command = $schedulerEvent->getCommand()::class;
+        $command = $this->getCommand($schedulerEvent->getCommand());
         $frequency = $schedulerEvent->getExpression();
         $cron = new CronExpression($frequency);
 
@@ -70,7 +71,7 @@ class SchedulerListener implements EventListenerInterface
             return;
         }
 
-        $command = $schedulerEvent->getCommand()::class;
+        $command = $this->getCommand($schedulerEvent->getCommand());
         $frequency = $schedulerEvent->getExpression();
         $cron = new CronExpression($frequency);
 
@@ -97,9 +98,8 @@ class SchedulerListener implements EventListenerInterface
             return;
         }
 
-        $command = $schedulerEvent->getCommand()::class;
+        $command = $this->getCommand($schedulerEvent->getCommand());
         $frequency = $schedulerEvent->getExpression();
-
         $this->conn->insertQuery('schedulers', [
             'uniqid' => $schedulerEvent->getUniqId(),
             'command' => $command,
@@ -107,5 +107,14 @@ class SchedulerListener implements EventListenerInterface
             'last_run' => $schedulerEvent->getStartedAt(),
             'created' => date('Y-m-d H:i:s'),
         ])->epilog('ON DUPLICATE KEY UPDATE last_run=VALUES(`last_run`)')->execute();
+    }
+
+    private function getCommand(Command $command): string
+    {
+        if(str_contains($command::class, 'Cake\Command\Command')) {
+            return 'anonymous';
+        }
+
+        return $command::class;
     }
 }
